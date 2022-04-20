@@ -19,7 +19,7 @@ CALIBRATION_FRAME_CLASS = 'banzai.steward.StewardCalibrationFrame'
 
 ORDERED_STAGES = ['banzai.bpm.BadPixelMaskLoader',
                   'banzai.bpm.SaturatedPixelFlagger',
-                  # 'banzai.qc.header_checker.HeaderChecker',
+                  'banzai.qc.header_checker.HeaderChecker',
                   # 'banzai.qc.sinistro_1000s.ThousandsTest',
                   'banzai.qc.saturation.SaturationTest',
                   'banzai.bias.OverscanSubtractor',
