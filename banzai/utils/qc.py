@@ -1,4 +1,5 @@
 from banzai import dbs
+import numpy as np
 
 
 def save_qc_results(runtime_context, qc_results, image):
@@ -18,6 +19,11 @@ def save_qc_results(runtime_context, qc_results, image):
     -----
     File name, site, instrument ID, dateobs, obstype, and timestamp are always saved in the database.
     """
+    for key, value in qc_results.items():
+        # JSON fields do not like numpy.bool_ types
+        if type(value) == np.bool_:
+            value = bool(value)
+        qc_results[key] = value
     with dbs.get_session(db_address=runtime_context.DB_ADDRESS) as db_session:
         record = dbs.Log(filename=image.filename.replace('.fits', '').replace('.fz', ''),
                          site=image.site,
