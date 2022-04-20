@@ -15,7 +15,7 @@ import numpy as np
 import requests
 from sqlalchemy import create_engine, pool, type_coerce, cast
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, CHAR, JSON, UniqueConstraint, Float
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, CHAR, JSON, UniqueConstraint, Float, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.expression import true
 from contextlib import contextmanager
@@ -116,6 +116,18 @@ class ProcessedImage(Base):
     checksum = Column(CHAR(32), index=True, default='0'*32)
     success = Column(Boolean, default=False)
     tries = Column(Integer, default=0)
+
+
+class Log(Base):
+    __tablename__ = 'logs'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    filename = Column(String(100), index=True, nullable=True)
+    site = Column(String(15), ForeignKey('sites.id'), index=True, nullable=True)
+    instrument_id = Column(Integer, ForeignKey('instruments.id'), index=True, nullable=True)
+    dateobs = Column(DateTime, index=True, nullable=True)
+    obstype = Column(String(8), index=True, nullable=True)
+    timestamp = Column(DateTime, index=True, default=func.now())
+    results = Column(JSON)
 
 
 def parse_configdb(configdb_address=None):
