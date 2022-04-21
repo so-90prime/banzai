@@ -59,7 +59,8 @@ class StewardObservationFrame(ObservationFrame):
 
     @property
     def dateobs(self):
-        return Time(self.primary_hdu.meta.get('DATE-OBS'), scale='utc').datetime
+        return Time(self.primary_hdu.meta.get('DATE-OBS') + 'T' +
+                    self.primary_hdu.meta.get('TIME-OBS'), scale='utc').datetime
 
     @property
     def datecreated(self):
