@@ -38,6 +38,7 @@ ORDERED_STAGES = ['banzai.bpm.BadPixelMaskLoader',
                   'banzai.astrometry.WCSSolver',
                   # 'banzai.qc.pointing.PointingTest',
                   'banzai.photometry.PhotometricCalibrator',
+                  'banzai.qc.depth.DepthTest',
                   ]
 
 CALIBRATION_MIN_FRAMES = {'BIAS': 5,
