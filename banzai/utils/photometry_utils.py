@@ -43,7 +43,10 @@ def match_catalogs(input_catalog, reference_catalog, match_threshold=1.0) -> Tab
 
     Returns
     -------
-    An astropy table with only matched sources but columns from both catalogs
+    matched_catalog: astropy Table
+        An astropy table with only matched sources but columns from both catalogs
+    good_matches: numpy.ndarray
+        Boolean array of indices into input_catalog that are matched
 
     Notes
     -----
@@ -65,7 +68,7 @@ def match_catalogs(input_catalog, reference_catalog, match_threshold=1.0) -> Tab
     for colname in reference_catalog.colnames:
         matched_catalog[colname] = reference_catalog[colname][match_indexes][good_matches]
 
-    return matched_catalog
+    return matched_catalog, good_matches
 
 
 def log_zeropoint_likelihood(theta, mags, mag_errors, catalog_mags, catalog_errors, colors, color_errors):

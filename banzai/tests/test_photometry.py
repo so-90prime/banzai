@@ -41,7 +41,7 @@ def test_match_catalog():
         row['ra'], row['dec'] = shifted_coordinate.ra.value, shifted_coordinate.dec.value
 
     # make sure the overlapping sources are the same as we would expect
-    matched_catalog = photometry_utils.match_catalogs(input_catalog, reference_catalog)
+    matched_catalog, good_matches = photometry_utils.match_catalogs(input_catalog, reference_catalog)
     for i in range(100):
         assert i in matched_catalog['source_id']
     assert len(matched_catalog) == 100
