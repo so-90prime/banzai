@@ -1,9 +1,9 @@
-BANZAI Pipeline
-===============
+BANZAI Pipeline for 90Prime
+===========================
 
-This repo contains the data reduction package for Las Cumbres Observatory (LCO).
+This repo contains the data reduction package for the 90Prime imager on Steward Observatory's Bok Telescope.
 
-BANZAI stands for Beautiful Algorithms to Normalize Zillions of Astronomical Images.
+It is based on Las Cumbres Observatory's BANZAI, which stands for Beautiful Algorithms to Normalize Zillions of Astronomical Images.
 
 See also `<https://banzai.readthedocs.io>`_ for more information.
 
@@ -17,133 +17,145 @@ We have recently implemented a neural network model to detect cosmic rays in gro
 pleas see our paper on arXiv. If possible please also cite
 `Xu et al., 2021, arXiv:2106.14922 <https://arxiv.org/abs/2106.14922>`_.
 
-.. image:: https://travis-ci.com/LCOGT/banzai.png?branch=master
-    :target: https://travis-ci.com/LCOGT/banzai
-    :alt: Test Status
-
-.. image:: https://coveralls.io/repos/github/LCOGT/banzai/badge.svg
-    :target: https://coveralls.io/github/LCOGT/banzai
-    :alt: Coverage Status
-
-.. image:: https://readthedocs.org/projects/banzai/badge/?version=latest
-    :target: http://banzai.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
-
 Installation
 ------------
-BANZAI can be installed using pip, by running from the top-level directory containing `setup.py`.
-
-Note that `pip>=19.3.1` is required to build and install BANZAI.
+We will use PostgreSQL as our database. Make sure your machine has a PostgreSQL client installed.
+We'll also use a Python virtual environment, so make sure that feature is installed.
 
 .. code-block:: bash
 
-    pip install .
+    sudo apt install postgresql-client-common postgresql-client-12 python3.8-venv
 
-This will automatically install the dependencies from PyPi, so it is recommended to install
-BANZAI in a virtual environment.
+Clone all the code from GitHub into your home directory. Note that our version of BANZAI is on the ``90prime`` branch.
+Right now, both the astrometry and photometry repos are private, so I had to add my SSH key to my GitHub account.
+
+.. code-block:: bash
+
+    git clone git@github.com:so-90prime/banzai.git -b 90prime
+    git clone git@github.com:griffin-h/photometric-catalog-service.git
+    git clone git@github.com:griffin-h/gaia-astrometry.net-service.git
+
+Create the ``.env`` file in the ``banzai`` directory with our database secrets. The format is
+
+.. code-block::
+
+    PGNAME=my_database_name
+    PGUSER=my_database_username
+    PGPASSWORD=my_database_password
+    PGPORT=my_database_port
+
+Set up the Python virtual environment. We're adding the environment variables to the end of the activate script as a shortcut.
+
+.. code-block:: bash
+
+    python -m venv ~/banzai_env
+    echo """# custom environment variables for banzai
+    set -a
+    source $HOME/banzai/.env
+    set +a
+    export PGHOST=localhost
+    export DB_ADDRESS=postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGNAME
+    export OPENTSDB_PYTHON_METRICS_TEST_MODE='True'""" >> ~/banzai_env/bin/activate
+    source ~/banzai_env/bin/activate
+    pip install -e ~/banzai/
+
+Build and run the Docker containers. The first time you run this, it will take a while to build everything.
+(We may need to increase the shared memory of the photometry service the first time in order to ingest the reference catalog.
+On the command line this is ``--shm-size=16g`` but I'm not sure how to do it with Docker compose.)
+
+.. code-block:: bash
+    
+    cd ~/banzai/
+    docker compose up -d
+    
+Initialize the BANZAI database. For 90Prime, we create a different instrument for each chip (90pa, 90pb, 90pc, 90pd).
+
+.. code-block:: bash
+
+    banzai_create_db
+    banzai_add_site --site=kpno --longitude=-111.6 --latitude=31.98 --elevation=2120 --timezone=-7
+    for chip in a b c d
+        do banzai_add_instrument --site=kpno --name=90prime --camera=90p$chip --instrument-type=90prime
+    done
+
+Download and ingest the `ATLAS Reference Catalog 2 <https://archive.stsci.edu/hlsp/atlas-refcat2>`_. This will take a really long time (days). We use this for photometric calibration.
+
+.. code-block:: bash
+
+    mkdir /nfs/data/primefocus/atlas-refcat2/
+    cd /nfs/data/primefocus/atlas-refcat2/
+    wget https://archive.stsci.edu/hlsps/atlas-refcat2/hlsp_atlas-refcat2_atlas_ccd_m33-m15_multi_v1_cat.csv.gz https://archive.stsci.edu/hlsps/atlas-refcat2/hlsp_atlas-refcat2_atlas_ccd_m15-p19_multi_v1_cat.csv.gz https://archive.stsci.edu/hlsps/atlas-refcat2/hlsp_atlas-refcat2_atlas_ccd_p19-p90_multi_v1_cat.csv.gz
+    gunzip *.csv.gz
+    CATALOG_DB_URL=DB_ADDRESS python ~/photometric-catalog-service/db_creation/create_db.py
+    psql -c "CREATE INDEX atlas_refcat2_position_idx ON atlas_refcat2 USING GIST (position);"
+    psql -c "vacuum analyze;"
+
+Lastly, copy all the astrometry.net indices to /nfs/data/primefocus/gaia-astrometry.net-indices/. These aren't online at the moment.
+
+BANZAI is installed! If you want to shut down the Docker containers, you can just run
+
+.. code-block:: bash
+
+    cd ~/banzai/
+    docker compose down
 
 Usage
 -----
-BANZAI has a variety of console entry points:
+Right now we are running BANZAI from the command line. There is no automated process to find and reduce images.
 
-* `banzai_reduce_individual_frame`: Process a single frame
-* `banzai_reduce_directory`: Process all frames in a directory
-* `banzai_make_master_calibrations`: Make a master calibration frame by stacking previously processed individual calibration frames.
-* `banzai_e2e_stack_calibrations`: Convenience script for stacking calibration frames in the end-to-end tests
-* `banzai_automate_stack_calibrations`: Start the scheduler that sets when to create master calibration frames
-* `banzai_run_realtime_pipeline`: Start the listener to detect and process incoming frames
-* `banzai_mark_frame_as_good`: Mark a calibration frame as good in the database
-* `banzai_mark_frame_as_bad`: Mark a calibration frame as bad in the database
-* `banzai_update_db`: Update the instrument table by querying the ConfigDB
-* `banzai_run_end_to_end_tests`: A wrapper to run the end-to-end tests
-* `banzai_migrate_db`: Migrate data from a database from before 0.16.0 to the current database format
-* `banzai_add_instrument`: Add an instrument to the database
-* `banzai_add_site`: Add a site to the database
-* `banzai_add_bpm`: Add a BPM to the database
-* `banzai_create_db`: Initialize a database to be used when running the pipeline
-
-You can see more about the parameters the commands take by adding a `--help` to any command of interest.
-
-
-BANZAI can be deployed in two ways, an active pipeline that
-processes data as it arrives or a manual pipeline that is run from the command line.
-
-The main requirement to run BANZAI is that the database has been set up. BANZAI is database type
-agnostic as it uses SQLAlchemy. To create a new database to run BANZAI, run
-
-.. code-block:: python
-
-    from banzai.dbs import create_db
-    create_db('.', db_address='sqlite:///banzai.db')
-
-This will create an sqlite3 database file in your current directory called `banzai.db`.
-
-If you are not running this at LCO, you will have to add the instrument of interest to your database
-by running `banzai_add_instrument` before you can process any data.
-
-By default, BANZAI requires a bad pixel mask. You can create one that BANZAI can use by using the tool
-`here <https://github.com/LCOGT/pixel-mask-gen>`_. If the bad pixel mask is in the current directory when you
-create the database it will get automatically added. Otherwise run
-
-.. code-block:: python
-
-    from banzai.dbs import populate_calibration_table_with_bpms
-    populate_calibration_table_with_bpms('/directory/with/bad/pixel/mask', db_address='sqlite://banzai.db')
-
-Generally, you have to reduce individual bias frames first by running `banzai_reduce_individual_frame` command.
-If the processing went well, you can mark them as good in the database using `banzai_mark_frame_as_good`.
-Once you have individually processed bias frames, you can create a master calibration using
-`banzai_stack_calibrations`. This master calibration will then be available for future reductions of
-other observation types. Next, similarly reduce individual dark frames and then stack them to
-create a master dark frame. Then, the same for skyflats. At this point, you will be able to process
-science images using the `banzai_reduce_individual_frame` command.
-
-To run the pipeline in its active mode, you need to setup a task queue and a filename queue.
-See the `docker-compose.yml` file for details on this setup.
-
-Tests
------
-Unit tests can be run using the tox test automation tool, which will automatically build and install
-the required dependencies in a virtual environment, then run the tests.
-The end-to-end tests require more setup, so to run only the unit tests locally run:
+First activate the environment and start the Docker containers.
 
 .. code-block:: bash
 
-    tox -e test -- -m 'not e2e'
+    source ~/banzai_env/bin/activate
+    cd ~/banzai/
+    docker compose up -d
 
-The `-m` is short for marker. The following markers are defined if you only want to run a subset of the tests:
-
-* e2e: End-to-end tests. Skip these if you only want to run unit tests.
-* master_bias: Only test making a master bias
-* master_dark: Only test making a master dark, assumes master bias frame already exists
-* master_flat: Only test making a master flat, assumes master bias and dark frames already exist
-* science_files: Only test processing science data, assumes master bias, dark, and flat frames already exist.
-
-The end-to-end tests run on Jenkins at LCO automatically for every pull request.
-
-To run the end-to-end tests locally, the easiest setup uses docker-compose.
-In the code directory run:
+The first time you want to process images, you'll have to manually create the master calibration files.
+(We're skipping bad pixel masks for now.) First, the bias frames. You'll notice the main command is ``banzai_reduce_multichip_frame``.
 
 .. code-block:: bash
 
-    export DOCKER_IMG=banzai
-    docker build -t $DOCKER_IMG .
-    docker-compose up
+    for fn in $(ls path/to/raw/data/*.fits)  # fill in this regular expression to get just the bias frames
+        do banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus --filepath $fn
+    done
+    for fn in $(ls path/to/reduced/data/*.fits.fz)  # fill in this regular expression to get just the bias frames
+        do banzai_mark_frame_as_good --filename $(basename $fn)
+    done
+    for chip in a b c d
+        do banzai_make_master_calibrations --processed-path /nfs/data/primefocus --fpack --no-bpm --site kpno --camera 90p$chip --frame-type bias --min-date 2022-11-02 --max-date 2022-11-03
+    done
 
-After all of the containers are up, run
+Then the flat fields. You can include all the filters here and it will sort through them correctly.
 
 .. code-block:: bash
 
-    docker exec banzai-listener pytest --pyargs banzai.tests "-m e2e"
+    for fn in $(ls path/to/raw/data/*.fits)  # fill in this regular expression to get just the flat frames
+        do banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus --filepath $fn
+    done
+    for fn in $(ls path/to/reduced/data/*.fits.fz)  # fill in this regular expression to get just the flat frames
+        do banzai_mark_frame_as_good --filename $(basename $fn)
+    done
+    for chip in a b c d
+        do banzai_make_master_calibrations --processed-path /nfs/data/primefocus --fpack --no-bpm --site kpno --camera 90p$chip --frame-type skyflat --min-date 2022-11-02 --max-date 2022-11-03
+    done
+
+Finally, reduce the science frames.
+
+.. code-block:: bash
+
+    for fn in $(ls path/to/raw/data/*.fits)  # fill in this regular expression to get just the science frames
+        do banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus --filepath $fn
+    done
 
 License
 -------
-This project is Copyright (c) Las Cumbres Observatory and licensed under the terms of GPLv3. See the LICENSE file for more information.
+The original project is Copyright (c) Las Cumbres Observatory and licensed under the terms of GPLv3. See the LICENSE file for more information.
 
 
 Support
 -------
-`Create an issue <https://github.com/LCOGT/banzai/issues>`_
+`Create an issue <https://github.com/so-90prime/banzai/issues>`_
 
 .. image:: http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat
     :target: http://www.astropy.org
