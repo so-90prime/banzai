@@ -425,6 +425,9 @@ def mark_frame(filename, mark_as, db_address=None):
 
 
 def create_db(db_address=None):
+    if db_address is None:
+        db_address = settings.DB_ADDRESS
+
     # Create an engine for the database
     engine = create_engine(db_address)
 
