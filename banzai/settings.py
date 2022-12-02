@@ -19,7 +19,7 @@ CALIBRATION_FRAME_CLASS = 'banzai.steward.StewardCalibrationFrame'
 
 ORDERED_STAGES = ['banzai.bpm.BadPixelMaskLoader',
                   'banzai.bpm.SaturatedPixelFlagger',
-                  # 'banzai.qc.header_checker.HeaderChecker',
+                  'banzai.qc.header_checker.HeaderChecker',
                   # 'banzai.qc.sinistro_1000s.ThousandsTest',
                   'banzai.qc.saturation.SaturationTest',
                   'banzai.bias.OverscanSubtractor',
@@ -34,9 +34,11 @@ ORDERED_STAGES = ['banzai.bpm.BadPixelMaskLoader',
                   'banzai.qc.pattern_noise.PatternNoiseDetector',
                   'banzai.cosmic.CosmicRayDetector',
                   'banzai.photometry.SourceDetector',
+                  'banzai.qc.focus.FocusTest',
                   'banzai.astrometry.WCSSolver',
                   # 'banzai.qc.pointing.PointingTest',
                   'banzai.photometry.PhotometricCalibrator',
+                  'banzai.qc.depth.DepthTest',
                   ]
 
 CALIBRATION_MIN_FRAMES = {'BIAS': 5,

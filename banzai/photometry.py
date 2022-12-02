@@ -307,7 +307,7 @@ class PhotometricCalibrator(Stage):
 
         # Match the catalog to the detected sources
         good_sources = np.logical_and(image['CAT'].data['flag'] == 0, image['CAT'].data['flux'] > 0.0)
-        matched_catalog = match_catalogs(image['CAT'].data[good_sources], reference_catalog)
+        matched_catalog, good_matches = match_catalogs(image['CAT'].data[good_sources], reference_catalog)
 
         if len(matched_catalog) == 0:
             logger.error('No matching sources found. Skipping zeropoint determination', image=image)
@@ -331,4 +331,8 @@ class PhotometricCalibrator(Stage):
         # Calculate the mag of each of the items in the catalog (without the color term) saving them
         image['CAT'].data['mag'], image['CAT'].data['magerr'] = to_magnitude(image['CAT'].data['flux'], image['CAT'].data['fluxerr'],
                                                                              zeropoint, image.exptime)
+        final_sources = np.zeros(len(image['CAT'].data), dtype=bool)
+        final_sources[good_sources] = good_matches
+        image['CAT'].data['catmag'] = np.nan  # add catalog mag for DepthTest
+        image['CAT'].data['catmag'][final_sources] = matched_catalog[f'{image.filter[0]}mag']
         return image

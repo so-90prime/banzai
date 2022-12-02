@@ -26,10 +26,7 @@ class HeaderChecker(Stage):
     def __init__(self, runtime_context):
         super(HeaderChecker, self).__init__(runtime_context)
 
-        self.expected_header_keywords = ['RA', 'DEC', 'CAT-RA', 'CAT-DEC',
-                                         'OFST-RA', 'OFST-DEC', 'TPT-RA',
-                                         'TPT-DEC', 'CRVAL1', 'CRVAL2', 'CRPIX1',
-                                         'CRPIX2', 'EXPTIME']
+        self.expected_header_keywords = ['RA', 'DEC', 'EXPTIME']
 
     def do_stage(self, image):
         """
@@ -48,8 +45,10 @@ class HeaderChecker(Stage):
        """
         logger.info("Checking header sanity.", image=image)
         bad_keywords = self.check_keywords_missing_or_na(image)
-        self.check_ra_range(image, bad_keywords)
-        self.check_dec_range(image, bad_keywords)
+        if 'CRVAL1' in self.expected_header_keywords:
+            self.check_ra_range(image, bad_keywords)
+        if 'CDVAL2' in self.expected_header_keywords:
+            self.check_dec_range(image, bad_keywords)
         self.check_exptime_value(image, bad_keywords)
         return image
 
@@ -159,10 +158,10 @@ class HeaderChecker(Stage):
         """
         if bad_keywords is None:
             bad_keywords = []
-        if 'EXPTIME' not in bad_keywords and 'OBSTYPE' not in bad_keywords:
+        if 'EXPTIME' not in bad_keywords:
             exptime_value = image.meta['EXPTIME']
             qc_results = {"header.exptime.value": exptime_value}
-            if image.meta['OBSTYPE'] != 'BIAS':
+            if image.obstype != 'BIAS':
                 is_exptime_null = exptime_value <= 0.0
                 if is_exptime_null:
                     sentence = 'The header EXPTIME key got the unexpected value {0}:' \
