@@ -22,12 +22,12 @@ def split_chips(filename):
     """
     hdulist = fits.open(filename)
     hdr = hdulist[0].header
-    namps_per_chip = hdr['N-AMPS-X'] * hdr['N-AMPS-Y'] // hdr['N-DET-X'] // hdr['N-DET-Y']
+    nchips = hdr['N-DET-X'] * hdr['N-DET-Y']
+    namps_per_chip = hdr['N-AMPS-X'] * hdr['N-AMPS-Y'] // nchips
     ext1 = 1
     image_paths = []
-    while ext1 < len(hdulist):
+    for chip_letter in string.ascii_lowercase[:nchips]:
         primary_hdu = hdulist[0].copy()
-        chip_letter = string.ascii_lowercase[ext1 // namps_per_chip]
         primary_hdu.header['CHIP'] = chip_letter
         new_hdulist = fits.HDUList([primary_hdu, *hdulist[ext1:ext1+namps_per_chip]])
         new_filename = filename.replace('.fits', f'{chip_letter}.fits')
