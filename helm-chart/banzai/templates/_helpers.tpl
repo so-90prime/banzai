@@ -84,6 +84,8 @@ External service URLS
   value: {{ .Values.banzai.configdbUrl | quote }}
 - name: OBSERVATION_PORTAL_URL
   value: {{ .Values.banzai.observationPortalUrl | quote }}
+- name: OPENSEARCH_URL
+  value: {{ .Values.banzai.openSearchURL | quote }}
 {{/*
 Ingester environment variables
 */ -}}
@@ -91,6 +93,10 @@ Ingester environment variables
   value: {{ .Values.ingester.apiRoot | quote }}
 - name: BUCKET
   value: {{ .Values.ingester.s3Bucket | quote }}
+- name: FILESTORE_TYPE
+  value: {{ .Values.ingester.filestoreType | quote }}
+- name: FILETYPE_MAPPING_OVERRIDES
+  value: {{ .Values.ingester.filetypeMappingOverrides | quote }}
 {{- if .Values.ingester.noMetrics }}
 - name: OPENTSDB_PYTHON_METRICS_TEST_MODE
   value: "1"

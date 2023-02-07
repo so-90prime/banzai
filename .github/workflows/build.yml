@@ -4,11 +4,6 @@ on:
   # Run this workflow for pushes on all branches
   push:
 
-env:
-  TOXENV: 'test'
-  TOXARGS: '-v'
-  TOXPOSARGS: ''
-
 jobs:
   tests:
     name: ${{ matrix.name }} (${{ matrix.os }}, ${{ matrix.toxenv }})
@@ -37,6 +32,16 @@ jobs:
             python-version: 3.7
             toxenv: py37-test-astropy30-numpy117
 
+          - name: Python 3.9 with minimal dependencies
+            os: ubuntu-latest
+            python-version: '3.9'
+            toxenv: py39-test
+
+          - name: Python 3.10 with minimal dependencies
+            os: ubuntu-latest
+            python-version: '3.10'
+            toxenv: py310-test
+
           - name: Code style checks
             os: ubuntu-latest
             python-version: 3.8
@@ -56,4 +61,5 @@ jobs:
       if: "endsWith(matrix.toxenv, 'build_docs')"
       run: sudo apt-get -y install graphviz
     - name: Run tests
-      run: tox $TOXARGS -- $TOXPOSARGS
+      run: |
+        tox -e ${{ matrix.toxenv }}

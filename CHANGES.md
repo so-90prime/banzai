@@ -1,3 +1,51 @@
+1.9.9 (2022-08-22)
+------------------
+- We now reject flat field frames that have too low of signal to noise. 
+
+1.9.8 (2022-04-14)
+------------------
+- Changed add_bpm function to take any calibration file, renamed to add_super_calibration
+
+1.9.7 (2022-04-07)
+------------------
+- Updates to use OpenSearch
+
+1.9.6 (2022-02-25)
+------------------
+- Bugfix to propagate headers in data table objects
+
+1.9.5 (2022-02-23)
+------------------
+- Minor fixes for new ingester lib (3.0.4)
+
+1.9.4 (2022-02-22)
+------------------
+- Minor fixes for new ingester lib (3.0.3)
+
+1.9.3 (2022-02-15)
+------------------
+- Minor fixes for new ingester lib (3.0.1)
+
+1.9.2 (2022-02-10)
+------------------
+- Update for new major version of ingester lib
+
+1.9.1 (2022-02-09)
+------------------
+- Fixes to python 3.10 compatibility 
+
+1.9.0 (2022-02-07)
+------------------
+- Upgraded tests to include newer versions of python up to 3.10
+
+1.8.0 (2022-02-01)
+------------------
+- Fixed archive call when no auth token is included.
+
+1.7.3 (2022-01-28)
+------------------
+- Add OBJECT logging tag to pointing test so it can be filtered in Elasticsearch
+
 1.7.2 (2022-01-12)
 ------------------
 - Bugfix to read in non-fpacked files

@@ -135,10 +135,10 @@ spec:
         periodSeconds: 1
       resources:
         requests:
-          cpu: 2
+          cpu: 1
           memory: 8Gi
         limits:
-          cpu: 4
+          cpu: 2
           memory: 8Gi
     - name: banzai-celery-beat
       image: @BANZAI_IMAGE@

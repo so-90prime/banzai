@@ -91,7 +91,8 @@ spec:
           command:
             - "banzai_run_realtime_pipeline"
             - "--post-to-archive"
-            - "--post-to-elasticsearch"
+            - "--post-to-opensearch"
+            - "--opensearch-url=$(OPENSEARCH_URL)"
             - "--fpack"
             - "--rlevel=91"
             - "--db-address=$(DB_ADDRESS)"
@@ -120,7 +121,8 @@ spec:
           command:
             - "banzai_automate_stack_calibrations"
             - "--post-to-archive"
-            - "--post-to-elasticsearch"
+            - "--post-to-opensearch"
+            - "--opensearch-url=$(OPENSEARCH_URL)"
             - "--fpack"
             - "--rlevel=91"
             - "--db-address=$(DB_ADDRESS)"
