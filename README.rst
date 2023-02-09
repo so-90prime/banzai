@@ -24,7 +24,7 @@ We'll also use a Python virtual environment, so make sure that feature is instal
 
 .. code-block:: bash
 
-    sudo apt install postgresql-client-common postgresql-client-12 python3.8-venv
+    sudo apt install postgresql-client python3-venv
 
 Clone all the code from GitHub into your home directory. Note that our version of BANZAI is on the ``90prime`` branch.
 Right now, both the astrometry and photometry repos are private, so I had to add my SSH key to my GitHub account.
