@@ -48,7 +48,7 @@ Set up the Python virtual environment. We're adding the environment variables to
 
 .. code-block:: bash
 
-    python -m venv ~/banzai_env
+    python3 -m venv ~/banzai_env
     echo """# custom environment variables for banzai
     set -a
     source $HOME/banzai/.env
