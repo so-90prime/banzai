@@ -57,7 +57,7 @@ Set up the Python virtual environment. We're adding the environment variables to
     export DB_ADDRESS=postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGNAME
     export OPENTSDB_PYTHON_METRICS_TEST_MODE='True'""" >> ~/banzai_env/bin/activate
     source ~/banzai_env/bin/activate
-    pip install -e ~/banzai/
+    pip install ~/banzai/
 
 Build and run the Docker containers. The first time you run this, it will take a while to build everything.
 (We may need to increase the shared memory of the photometry service the first time in order to ingest the reference catalog.
