@@ -49,13 +49,13 @@ Set up the Python virtual environment. We're adding the environment variables to
 .. code-block:: bash
 
     python3 -m venv ~/banzai_env
-    echo """# custom environment variables for banzai
+    echo '''# custom environment variables for banzai
     set -a
     source $HOME/banzai/.env
     set +a
     export PGHOST=localhost
     export DB_ADDRESS=postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGNAME
-    export OPENTSDB_PYTHON_METRICS_TEST_MODE='True'""" >> ~/banzai_env/bin/activate
+    export OPENTSDB_PYTHON_METRICS_TEST_MODE="True"''' >> ~/banzai_env/bin/activate
     source ~/banzai_env/bin/activate
     pip install ~/banzai/
 
