@@ -145,9 +145,11 @@ class CalibrationComparer(CalibrationUser):
     ACCEPTABLE_PIXEL_FRACTION = 0.05
 
     def on_missing_master_calibration(self, image):
-        logger.error('No master {caltype} to compare to, Flagging image as bad.'.format(caltype=self.calibration_type),
-                     image=image)
-        image.is_bad = True
+        if self.runtime_context.override_missing:
+            logger.warning(f'No master {self.calibration_type} to compare to.', image=image)
+        else:
+            logger.error(f'No master {self.calibration_type} to compare to. Flagging image as bad.', image=image)
+            image.is_bad = True
         return image
 
     def is_frame_bad(self, image, master_calibration_image):

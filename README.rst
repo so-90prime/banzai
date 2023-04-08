@@ -119,9 +119,6 @@ The first time you want to process images, you'll have to manually create the ma
     for fn in $(ls path/to/raw/data/*.fits)  # fill in this regular expression to get just the bias frames
         do banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath $fn
     done
-    for fn in $(ls path/to/reduced/data/*.fits.fz)  # fill in this regular expression to get just the bias frames
-        do banzai_mark_frame_as_good --filename $(basename $fn)
-    done
     for chip in a b c d
         do banzai_make_master_calibrations --processed-path /nfs/data/primefocus/processed --fpack --no-bpm --site kpno --camera 90p$chip --frame-type bias --min-date 2022-11-02 --max-date 2022-11-03
     done
@@ -132,9 +129,6 @@ Then the flat fields. You can include all the filters here and it will sort thro
 
     for fn in $(ls path/to/raw/data/*.fits)  # fill in this regular expression to get just the flat frames
         do banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath $fn
-    done
-    for fn in $(ls path/to/reduced/data/*.fits.fz)  # fill in this regular expression to get just the flat frames
-        do banzai_mark_frame_as_good --filename $(basename $fn)
     done
     for chip in a b c d
         do banzai_make_master_calibrations --processed-path /nfs/data/primefocus/processed --fpack --no-bpm --site kpno --camera 90p$chip --frame-type skyflat --min-date 2022-11-02 --max-date 2022-11-03
