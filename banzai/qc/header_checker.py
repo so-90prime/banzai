@@ -26,7 +26,8 @@ class HeaderChecker(Stage):
     def __init__(self, runtime_context):
         super(HeaderChecker, self).__init__(runtime_context)
 
-        self.expected_header_keywords = ['RA', 'DEC', 'EXPTIME']
+        self.expected_header_keywords = ['RA', 'DEC', 'EXPTIME', 'FILTER']
+        self.bad_header_values = ['N/A', 'none', '']
 
     def do_stage(self, image):
         """
@@ -80,8 +81,8 @@ class HeaderChecker(Stage):
                 sentence = 'The header key {0} is not in image header!'.format(keyword)
                 logger.error(sentence, image=image)
                 missing_keywords.append(keyword)
-            elif image.meta[keyword] == 'N/A':
-                sentence = 'The header key {0} got the unexpected value : N/A'.format(keyword)
+            elif image.meta[keyword] in self.bad_header_values:
+                sentence = 'The header key {0} got the unexpected value "{1}"'.format(keyword, image.meta[keyword])
                 logger.error(sentence, image=image)
                 na_keywords.append(keyword)
         are_keywords_missing = len(missing_keywords) > 0
