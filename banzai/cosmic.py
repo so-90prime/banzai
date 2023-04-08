@@ -1,12 +1,15 @@
 import logging
 from banzai.stages import Stage
+from banzai import settings
 from cosmic_conn import init_model
+import torch
 
 logger = logging.getLogger('banzai')
 
 # initialize a Cosmic-CoNN model
 cr_model = init_model("ground_imaging")
-cr_model.opt.crop = 256
+cr_model.opt.crop = settings.COSMIC_STAMP_SIZE
+torch.set_num_threads(settings.COSMIC_NTHREADS)
 
 
 class CosmicRayDetector(Stage):

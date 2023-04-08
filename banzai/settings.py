@@ -81,6 +81,9 @@ SCHEDULE_STACKING_CRON_ENTRIES = {'coj': {'minute': 30, 'hour': 6},
                                   'elp': {'minute': 0, 'hour': 23},
                                   'ogg': {'minute': 0, 'hour': 3}}
 
+COSMIC_STAMP_SIZE = 256
+COSMIC_NTHREADS = 4
+
 ASTROMETRY_SERVICE_URL = os.getenv('ASTROMETRY_SERVICE_URL', 'http://localhost:5000/catalog/')
 WCS_SOURCE_LIMIT = 500  # use N brightest stars in image
 WCS_RADIUS = 2.  # degrees
