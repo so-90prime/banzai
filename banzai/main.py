@@ -138,15 +138,16 @@ def reduce_single_frame():
 
 def reduce_multichip_frame():
     extra_console_arguments = [{'args': ['--filepath'],
-                                'kwargs': {'dest': 'path', 'help': 'Full path to the file to process'}}]
+                                'kwargs': {'dest': 'path', 'help': 'Full path to the file to process', 'nargs': '+'}}]
     runtime_context = parse_args(settings, extra_console_arguments=extra_console_arguments)
-    image_paths = split_chips(runtime_context.path)
-    run_with_context = partial(stage_utils.run_pipeline_stages, runtime_context=runtime_context)
-    try:
-        with Pool(len(image_paths)) as p:
-            p.map(run_with_context, [[image_path] for image_path in image_paths])
-    except Exception:
-        logger.error(logs.format_exception(), extra_tags={'filepath': runtime_context.path})
+    for path in runtime_context.path:
+        image_paths = split_chips(path)
+        run_with_context = partial(stage_utils.run_pipeline_stages, runtime_context=runtime_context)
+        try:
+            with Pool(len(image_paths)) as p:
+                p.map(run_with_context, [[image_path] for image_path in image_paths])
+        except Exception:
+            logger.error(logs.format_exception(), extra_tags={'filepath': runtime_context.path})
 
 
 def make_master_calibrations():
