@@ -32,6 +32,7 @@ class BiasSubtractor(CalibrationUser):
 
     def apply_master_calibration(self, image, master_calibration_image):
         image -= master_calibration_image.bias_level
+        logger.info(f'Subtracted bias level of {master_calibration_image.bias_level:.1f}', image=image)
         image.meta['BIASLVL'] = master_calibration_image.bias_level, 'Bias level that was removed after overscan'
         image -= master_calibration_image
         image.meta['L1IDBIAS'] = master_calibration_image.filename, 'ID of bias frame'
@@ -44,11 +45,12 @@ class OverscanSubtractor(Stage):
         super(OverscanSubtractor, self).__init__(runtime_context)
 
     def do_stage(self, image):
-        for data in image.ccd_hdus:
+        for i, data in enumerate(image.ccd_hdus):
             overscan_section = data.get_overscan_region()
             if overscan_section is not None:
                 overscan_level = stats.sigma_clipped_mean(data.data[overscan_section.to_slice()], 3)
                 data -= overscan_level
+                logger.info(f'Subtracted overscan level of {overscan_level:.1f} from extension {i+1:d}', image=image)
                 data.meta['L1STATOV'] = '1', 'Status flag for overscan correction'
                 data.meta['OVERSCAN'] = overscan_level, 'Overscan value that was subtracted'
             else:
@@ -65,6 +67,7 @@ class BiasMasterLevelSubtractor(Stage):
     def do_stage(self, image):
         bias_level = stats.sigma_clipped_mean(image.data, 3.5, mask=image.mask)
         image -= bias_level
+        logger.info(f'Subtracted master bias level of {bias_level:.1f}')
         image.meta['BIASLVL'] = bias_level, 'Bias level that was removed after overscan'
         return image
 
