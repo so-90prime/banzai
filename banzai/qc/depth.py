@@ -19,6 +19,9 @@ class DepthTest(Stage):
 
     def do_stage(self, image):
         sources = image['CAT'].data
+        if 'catmag' not in sources.colnames:
+            logger.info('Image not photometrically calibrated. Skipping depth test.')
+            return image
         sources['zeropoint'] = sources['catmag'] + 2.5 * np.log10(sources['flux'])
         zp_grad, zp_grad_angle, xctrs, yctrs, Z = compute_source_gradient(sources, 'zeropoint', image.shape, 4)
         logger.info(f'ZP gradient: {zp_grad:.6f} mag/pix at {zp_grad_angle:.0f}°', image=image)
