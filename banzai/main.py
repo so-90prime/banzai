@@ -154,7 +154,7 @@ def make_master_calibrations():
     extra_console_arguments = [{'args': ['--site'],
                                 'kwargs': {'dest': 'site', 'help': 'Site code (e.g. ogg)', 'required': True}},
                                {'args': ['--camera'],
-                                'kwargs': {'dest': 'camera', 'help': 'Camera (e.g. kb95)', 'required': True}},
+                                'kwargs': {'dest': 'camera', 'help': 'Camera (e.g. kb95)', 'required': False}},
                                {'args': ['--frame-type'],
                                 'kwargs': {'dest': 'frame_type', 'help': 'Type of frames to process',
                                            'choices': ['bias', 'dark', 'skyflat'], 'required': True}},
@@ -168,10 +168,14 @@ def make_master_calibrations():
                                                    'Must be in the format "YYYY-MM-DDThh:mm:ss".'}}]
 
     runtime_context = parse_args(settings, extra_console_arguments=extra_console_arguments)
-    instrument = dbs.query_for_instrument(runtime_context.site, runtime_context.camera,
-                                          db_address=runtime_context.db_address)
-    calibrations.make_master_calibrations(instrument,  runtime_context.frame_type.upper(),
-                                          runtime_context.min_date, runtime_context.max_date, runtime_context)
+    if runtime_context.camera is None:
+        instruments = dbs.get_instruments_at_site(runtime_context.site, db_address=runtime_context.db_address)
+    else:
+        instruments = [dbs.query_for_instrument(runtime_context.site, runtime_context.camera,
+                                                db_address=runtime_context.db_address)]
+    for instrument in instruments:
+        calibrations.make_master_calibrations(instrument,  runtime_context.frame_type.upper(),
+                                              runtime_context.min_date, runtime_context.max_date, runtime_context)
 
 
 def start_stacking_scheduler():

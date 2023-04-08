@@ -116,25 +116,21 @@ The first time you want to process images, you'll have to manually create the ma
 
 .. code-block:: bash
 
-    banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath path/to/raw/data/*.fits
-    for chip in a b c d
-        do banzai_make_master_calibrations --processed-path /nfs/data/primefocus/processed --fpack --no-bpm --site kpno --camera 90p$chip --frame-type bias --min-date 2022-11-02 --max-date 2022-11-03
-    done
+    banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath /nfs/data/primefocus/YYYYMMDD/image.ZERO.*.fits
+    banzai_make_master_calibrations --processed-path /nfs/data/primefocus/processed --fpack --no-bpm --site kpno --frame-type bias --min-date YYYY-MM-DD --max-date YYYY-MM-DD
 
 Then the flat fields. You can include all the filters here and it will sort through them correctly.
 
 .. code-block:: bash
 
-    banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath path/to/raw/data/*.fits
-    for chip in a b c d
-        do banzai_make_master_calibrations --processed-path /nfs/data/primefocus/processed --fpack --no-bpm --site kpno --camera 90p$chip --frame-type skyflat --min-date 2022-11-02 --max-date 2022-11-03
-    done
+    banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath /nfs/data/primefocus/YYYYMMDD/image.FLAT.*.fits
+    banzai_make_master_calibrations --processed-path /nfs/data/primefocus/processed --fpack --no-bpm --site kpno --frame-type skyflat --min-date YYYY-MM-DD --max-date YYYY-MM-DD
 
 Finally, reduce the science frames.
 
 .. code-block:: bash
 
-    banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath path/to/raw/data/*.fits
+    banzai_reduce_multichip_frame --no-bpm --override-missing-calibrations --fpack --processed-path /nfs/data/primefocus/processed --filepath /nfs/data/primefocus/YYYYMMDD/image.OBJECT.*.fits
 
 License
 -------
